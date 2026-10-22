@@ -1,868 +1,469 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Firefly Lantern</title>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Firefly Phototaxis 🏮</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://sad.adsgram.ai/js/sad.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent;user-select:none}
+html,body{height:100%;background:#070f18;color:#eaf6ee;font-family:system-ui,-apple-system,Segoe UI,sans-serif;overflow:hidden;touch-action:none}
+#app{position:relative;height:100%;max-width:480px;margin:auto;overflow:hidden;background:radial-gradient(ellipse at 50% 0,#16384a 0,#0a1a28 55%,#070f18 100%)}
+canvas{position:absolute;inset:0;width:100%;height:100%}
+.hud{position:absolute;top:10px;left:0;right:0;display:none;justify-content:space-between;align-items:center;padding:0 12px;font-weight:700;pointer-events:none}
+.hud.on{display:flex}
+.hud .pill{background:rgba(10,26,40,.7);border:1px solid #29506a;border-radius:20px;padding:5px 12px;font-size:14px}
+#pauseBtn{position:absolute;top:44px;right:12px;display:none;background:rgba(10,26,40,.7);border:1px solid #29506a;color:#fff;border-radius:50%;width:38px;height:38px;font-size:16px;z-index:20}
+#pauseBtn.on{display:block}
+#banner{position:absolute;top:30%;left:0;right:0;text-align:center;font-size:30px;font-weight:800;color:#ffe27a;text-shadow:0 0 18px #ffb800;opacity:0;transition:opacity .4s;pointer-events:none;z-index:15}
+.ov{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:11px;padding:18px;text-align:center;overflow-y:auto;z-index:30}
+.ov.on{display:flex}
+.dim{background:rgba(6,14,22,.92)}
+.logo{font-size:54px;filter:drop-shadow(0 0 18px #ffd84d);animation:fl 3s ease-in-out infinite}
+@keyframes fl{50%{transform:translateY(-8px)}}
+h1{font-size:30px;letter-spacing:1px;background:linear-gradient(90deg,#ffe27a,#b6ff8a);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:800}
+h2{font-size:24px;color:#ffe27a}
+.sub{font-size:12px;color:#9fc3b0;letter-spacing:2px;text-transform:uppercase}
+p,.t{font-size:14px;line-height:1.5;color:#b9d2c0}
+.stats{display:flex;gap:10px}
+.stat{background:rgba(20,48,66,.75);border:1px solid #2c5a76;border-radius:14px;padding:8px 14px;min-width:90px}
+.stat b{display:block;font-size:20px;color:#ffe27a}.stat span{font-size:11px;color:#9fc3b0}
+button.b{background:linear-gradient(180deg,#ffe98f,#ffc93c);color:#2a2000;border:0;border-radius:16px;padding:14px 22px;font-size:17px;font-weight:800;width:100%;max-width:300px;box-shadow:0 6px 0 #b8870f,0 10px 22px rgba(255,200,60,.25);cursor:pointer}
+button.b:active{transform:translateY(4px);box-shadow:0 2px 0 #b8870f}
+button.b.s{background:linear-gradient(180deg,#356683,#244a62);color:#fff;box-shadow:0 5px 0 #17303f;font-size:15px;padding:12px}
+button.b.s:active{box-shadow:0 1px 0 #17303f}
+button.b.ad{background:linear-gradient(180deg,#9fe8b0,#5ccf7d);color:#06301a;box-shadow:0 5px 0 #338a50;font-size:15px}
+button.b:disabled{opacity:.45}
+.row{display:flex;gap:10px;width:100%;max-width:300px}.row .b{padding:12px 6px;font-size:14px}
+.card{background:rgba(20,48,66,.8);border:1px solid #2c5a76;border-radius:14px;padding:10px 12px;width:100%;max-width:320px;text-align:left;font-size:13px;color:#cfe3d6}
+.tag{display:inline-block;color:#fff;font-size:11px;font-weight:700;border-radius:6px;padding:2px 7px;margin-right:6px}
+.tag.r{background:#2f9e57}.tag.i{background:#4a78c9}
+.shop{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.shop button{background:#ffd54a;border:0;border-radius:10px;padding:8px 10px;font-weight:800;color:#2a2000;cursor:pointer}
+.shop button:disabled{opacity:.4}
+.foot{font-size:11px;color:#6f93a3}
+#readyTap{position:absolute;inset:0;display:none;align-items:center;justify-content:center;color:#ffe27a;font-weight:800;font-size:20px;text-shadow:0 0 15px rgba(255,216,77,.8);pointer-events:none;z-index:18;animation:fl 1.5s infinite}
+</style>
+<link rel="me" href="https://www.blogger.com/profile/14137293026715849424" />
+<meta name='google-adsense-platform-account' content='ca-host-pub-1556223355139109'/>
+<meta name='google-adsense-platform-domain' content='blogspot.com'/>
+</head><body>
+<div id="app">
+<canvas id="c"></canvas>
+<div class="hud" id="hud">
+  <span class="pill">✨ <b id="sc">0</b></span>
+  <span class="pill" id="cmb">x1</span>
+  <span class="pill">❤️ <b id="lv">3</b></span>
+</div>
+<button id="pauseBtn">❚❚</button>
+<div id="banner"></div>
+<div id="readyTap">👆 TAP TO FLY</div>
+
+<!-- HOME -->
+<div class="ov on" id="home">
+<div class="logo">🪔</div>
+<h1>FIREFLY PHOTOTAXIS 🏮</h1>
+<div class="sub">Guide the light through the night</div>
+<div class="stats">
+<div class="stat"><b id="hBest">0</b><span>Best</span></div>
+<div class="stat"><b id="hCoins">0</b><span>Glow Coins</span></div>
+<div class="stat"><b id="hGames">0</b><span>Games</span></div>
+</div>
+<button class="b" id="play">▶ PLAY</button>
+<div class="row"><button class="b s" id="shopBtn">🛒 Upgrades</button><button class="b s" id="howBtn">❓ How to play</button></div>
+<div class="row"><button class="b s" id="dailyBtn">🎁 Daily Gift</button><button class="b s" id="sndBtn">🔈 Sound</button></div>
+<div class="card"><b>Where ads appear</b><br>
+<span class="tag r">Rewarded</span>Optional: tap “Watch ad” to revive or double coins.<br>
+<span class="tag i">Interstitial</span>After every 3rd game, before a new game starts, with a notice first. Never during play.</div>
+<div class="foot">No real money. No gambling. Coins are earned only by playing.</div>
+</div>
+
+<!-- HOW -->
+<div class="ov dim" id="how">
+<h2>How to play</h2>
+<div class="card">
+👆 <b>Tap to Fly:</b> Tap anywhere on the screen to gently float up. Release to glide down.<br>
+✨ <b>Phototaxis:</b> Collect golden glowing fireflies. Higher combos multiply your score!<br>
+🌲 <b>Avoid Obstacles:</b> Dodge the glowing pillars in the dark night.<br>
+🛡 <b>Shield:</b> Protects your lantern flame from one collision.<br>
+🧲 <b>Light Radius:</b> Magnetically pulls nearby fireflies to your light.<br>
+⬆ Reach higher scores to unlock more levels and faster flights!
+</div>
+<button class="b" data-back>Back</button>
+</div>
+
+<!-- SHOP -->
+<div class="ov dim" id="shop">
+<h2>Upgrades</h2><p>Coins: <b id="sCoins">0</b></p>
+<div class="card shop"><div>❤️ Extra Life<br><span id="uLifeT"></span></div><button id="uLife"></button></div>
+<div class="card shop"><div>🛡 Protective Shield<br><span id="uShieldT"></span></div><button id="uShield"></button></div>
+<div class="card shop"><div>🧲 Firefly Magnet<br><span id="uSlowT"></span></div><button id="uSlow"></button></div>
+<button class="b" data-back>Back</button>
+</div>
+
+<!-- PAUSE -->
+<div class="ov dim" id="pause"><h2>Paused</h2>
+<button class="b" id="resume">Resume</button><button class="b s" id="quit">Quit to menu</button></div>
+
+<!-- GAME OVER -->
+<div class="ov dim" id="over">
+<h2>Game Over</h2>
+<div class="stats"><div class="stat"><b id="fs">0</b><span>Score</span></div><div class="stat"><b id="bs">0</b><span>Best</span></div><div class="stat"><b id="fc">0</b><span>Coins</span></div></div>
+<p id="newbest"></p>
+<button class="b ad" id="rev">📺 Watch ad: revive with 1 life (Rewarded Ad)</button>
+<button class="b ad" id="dbl">📺 Watch ad: double coins (Rewarded Ad)</button>
+<button class="b" id="again">Play again</button>
+<button class="b s" id="menu">Home</button>
+<p id="msg"></p>
+</div>
+
+<!-- INTERSTITIAL NOTICE -->
+<div class="ov dim" id="intNote">
+<h2>Short ad break</h2>
+<p>An ad (Interstitial Ad) will be shown before your next game starts.</p>
+<button class="b" id="intGo">Watch ad and continue</button>
+</div>
+</div>
+
+<script>
+// ====== AdsGram: put your own Block IDs here ======
+const REWARD_BLOCK_ID="REWARD_BLOCK_ID";            // e.g. "1234"
+const INTERSTITIAL_BLOCK_ID="int-INTERSTITIAL_BLOCK_ID"; // e.g. "int-5678"
+let rewardAd=null,intAd=null;
+const okId=(v,p)=>p?/^int-\d+$/.test(v):/^\d+$/.test(v);
+try{if(window.Adsgram){if(okId(REWARD_BLOCK_ID,false))rewardAd=window.Adsgram.init({blockId:REWARD_BLOCK_ID});
+if(okId(INTERSTITIAL_BLOCK_ID,true))intAd=window.Adsgram.init({blockId:INTERSTITIAL_BLOCK_ID})}}catch(e){}
+try{Telegram.WebApp.ready();Telegram.WebApp.expand()}catch(e){}
+
+const $=id=>document.getElementById(id),DPR=devicePixelRatio||1;
+const cv=$('c'),ctx=cv.getContext('2d');let W,H;
+function rs(){W=cv.width=cv.clientWidth*DPR;H=cv.height=cv.clientHeight*DPR}addEventListener('resize',rs);rs();
+
+// ====== Save ======
+let S={best:0,coins:0,games:0,life:0,shield:0,slow:0,daily:''};
+try{Object.assign(S,JSON.parse(localStorage.getItem('fl_save')||'{}'))}catch(e){}
+const save=()=>{try{localStorage.setItem('fl_save',JSON.stringify(S))}catch(e){}};
+
+// ====== Soft sounds ======
+let AC=null,muted=false;
+function tone(f,d,v=0.04){if(muted)return;try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();
+const o=AC.createOscillator(),g=AC.createGain();o.type='sine';o.frequency.value=f;
+g.gain.setValueAtTime(v,AC.currentTime);g.gain.exponentialRampToValueAtTime(.0001,AC.currentTime+d);
+o.connect(g);g.connect(AC.destination);o.start();o.stop(AC.currentTime+d)}catch(e){}}
+$('sndBtn').onclick=()=>{muted=!muted;$('sndBtn').textContent=muted?'🔇 Sound off':'🔈 Sound on'};
+
+// ====== Screens ======
+const SCR=['home','how','shop','pause','over','intNote'];
+function show(id){SCR.forEach(s=>$(s).classList.toggle('on',s===id));}
+function hideAll(){SCR.forEach(s=>$(s).classList.remove('on'))}
+function refreshHome(){$('hBest').textContent=S.best;$('hCoins').textContent=S.coins;$('hGames').textContent=S.games;
+const d=new Date().toDateString();$('dailyBtn').disabled=S.daily===d;$('dailyBtn').textContent=S.daily===d?'🎁 Claimed today':'🎁 Daily Gift'}
+document.querySelectorAll('[data-back]').forEach(b=>b.onclick=()=>{tone(400,.07);goHome()});
+function goHome(){mode='home';running=false;$('hud').classList.remove('on');$('pauseBtn').classList.remove('on');$('readyTap').style.display='none';refreshHome();show('home')}
+$('howBtn').onclick=()=>{tone(450,.07);show('how')};
+$('dailyBtn').onclick=()=>{S.coins+=25;S.daily=new Date().toDateString();save();tone(700,.15);refreshHome()};
+
+// ====== Shop ======
+const MAX=3,cost=n=>40+n*60;
+function refreshShop(){$('sCoins').textContent=S.coins;
+[['Life','life','Start with +1 life per level'],['Shield','shield','Start with a protective shield (Level x30%)'],['Slow','slow','Attract fireflies from further away']].forEach(([k,key,txt])=>{
+$('u'+k+'T').textContent=txt+' · Lv '+S[key]+'/'+MAX;const b=$('u'+k);
+b.textContent=S[key]>=MAX?'MAX':'🪙 '+cost(S[key]);b.disabled=S[key]>=MAX||S.coins<cost(S[key])})}
+['Life','Shield','Slow'].forEach(k=>$('u'+k).onclick=()=>{const key=k.toLowerCase();if(S[key]<MAX&&S.coins>=cost(S[key])){S.coins-=cost(S[key]);S[key]++;save();tone(600,.12);refreshShop()}});
+$('shopBtn').onclick=()=>{tone(450,.07);refreshShop();show('shop')};
+
+// ====== Ambient Fireflies ======
+const bg=[...Array(26)].map(()=>({x:Math.random(),y:Math.random(),r:1+Math.random()*2.5,s:.0004+Math.random()*.0009,p:Math.random()*6}));
+
+// ====== Real Smooth Game Engine (Phototaxis Lantern Flight) ======
+let mode='home',running=false,paused=false,score=0,lives=3,shield=false,revived=false,runCoins=0,last=0,ft=0;
+let level=1,combo=1,streak=0;
+let lantern={x:0,y:0,vy:0,sparks:[],invTimer:0};
+let pillars=[],coins=[],spawnTimer=0,gameReady=false;
+
+function upd(){
+  $('sc').textContent=score;
+  $('lv').textContent=lives+(shield?' 🛡':'');
+  $('cmb').textContent='x'+combo;
+}
+function banner(t){const b=$('banner');b.textContent=t;b.style.opacity=1;setTimeout(()=>b.style.opacity=0,1100)}
+
+function startGame(){
+  rs();
+  mode='game';running=true;paused=false;gameReady=true;
+  hideAll();
+  $('hud').classList.add('on');
+  $('pauseBtn').classList.add('on');
+  $('readyTap').style.display='flex';
+  
+  score=0;runCoins=0;level=1;combo=1;streak=0;revived=false;
+  lives=3+S.life;
+  shield=Math.random()<(S.shield*0.35);
+  
+  lantern.x=W*0.22;
+  lantern.y=H*0.5;
+  lantern.vy=0;
+  lantern.sparks=[];
+  lantern.invTimer=0;
+  pillars=[];
+  coins=[];
+  spawnTimer=40;
+  
+  upd();
+  last=performance.now();
+}
+
+function endGame(){
+  running=false;mode='over';S.games++;
+  runCoins=Math.floor(score/2)+coins.filter(c=>c.collected).length;
+  S.coins+=runCoins;
+  const nb=score>S.best;if(nb)S.best=score;
+  save();
+  $('hud').classList.remove('on');$('pauseBtn').classList.remove('on');$('readyTap').style.display='none';
+  $('fs').textContent=score;$('bs').textContent=S.best;$('fc').textContent='+'+runCoins;
+  $('newbest').textContent=nb?'🏆 New best score!':'';
+  $('rev').style.display=revived?'none':'';
+  $('dbl').style.display=runCoins>0?'':'none';
+  $('dbl').disabled=false;$('msg').textContent='';
+  show('over');
+}
+
+function flap(){
+  if(!running||paused)return;
+  if(gameReady){
+    gameReady=false;
+    $('readyTap').style.display='none';
+  }
+  lantern.vy=-4.4*DPR;
+  tone(420,.08);
+  for(let i=0;i<3;i++){
+    lantern.sparks.push({x:lantern.x-6*DPR,y:lantern.y+4*DPR,vx:-(Math.random()*2+1)*DPR,vy:(Math.random()-0.5)*2*DPR,a:1,r:(Math.random()*2+1)*DPR});
+  }
+}
+
+cv.addEventListener('pointerdown',e=>{if(mode==='game')flap()});
+addEventListener('keydown',e=>{if(e.code==='Space'||e.key==='ArrowUp')flap();if(e.key==='Escape')pauseToggle()});
+
+function pauseToggle(){
+  if(mode!=='game')return;
+  paused=!paused;
+  paused?show('pause'):(hideAll(),last=performance.now());
+}
+$('pauseBtn').onclick=pauseToggle;
+$('resume').onclick=pauseToggle;
+$('quit').onclick=()=>{paused=false;goHome()};
+$('play').onclick=()=>{tone(500,.1);startGame()};
+$('menu').onclick=goHome;
+
+function loop(n){
+  requestAnimationFrame(loop);
+  const dt=Math.min(40,n-last)/16.7;last=n;ft+=dt;
+  if(mode==='game'&&running&&!paused){step(dt)}
+  draw();
+}
+
+function step(dt){
+  if(gameReady){
+    // Gentle safe hovering before first tap
+    lantern.y=(H*0.5)+Math.sin(ft*0.06)*8*DPR;
+    return;
+  }
+
+  const gravity=0.20*DPR;
+  lantern.vy+=gravity*dt;
+  lantern.y+=lantern.vy*dt;
+  if(lantern.invTimer>0)lantern.invTimer-=dt;
+
+  const sp=(2.4+level*0.25)*DPR;
+  const gap=170*DPR; // Generous wide gap
+  const pWidth=48*DPR;
+
+  spawnTimer-=dt;
+  if(spawnTimer<=0){
+    const minH=60*DPR;
+    const maxH=H-gap-minH;
+    const topH=Math.floor(Math.random()*(maxH-minH+1))+minH;
+    pillars.push({x:W+10*DPR,top:topH,bottom:topH+gap,passed:false});
     
-    <!-- Dependencies -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
-    
-    <!-- Telegram SDK -->
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    // Spawn luminous firefly
+    coins.push({
+      x:W+pWidth*0.5,
+      y:topH+(gap*0.5)+(Math.random()-0.5)*40*DPR,
+      r:8*DPR,
+      collected:false
+    });
+    spawnTimer=Math.max(65,95-level*3);
+  }
 
-    <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: #07101e;
-            color: #f8fafc;
-            -webkit-tap-highlight-color: transparent;
-            margin: 0;
-            overflow: hidden;
-            user-select: none;
+  // Obstacle collision & scoring
+  for(let i=0;i<pillars.length;i++){
+    let p=pillars[i];
+    p.x-=sp*dt;
+
+    if(!p.passed&&p.x+pWidth<lantern.x){
+      score+=combo;
+      streak++;
+      combo=Math.min(5,1+Math.floor(streak/4));
+      p.passed=true;
+      tone(580+combo*50,.08);
+      const nl=1+Math.floor(score/15);
+      if(nl>level){level=nl;banner('Level '+level);tone(800,.2)}
+      upd();
+    }
+
+    if(lantern.invTimer<=0){
+      const hitBox=6*DPR;
+      if(lantern.x+hitBox>p.x&&lantern.x-hitBox<p.x+pWidth){
+        if(lantern.y-hitBox<p.top||lantern.y+hitBox>p.bottom){
+          if(shield){
+            shield=false;
+            lantern.invTimer=60;
+            tone(500,.15);
+            banner('Shield Saved!');
+            upd();
+          }else{
+            lives--;
+            streak=0;combo=1;
+            tone(180,.25);
+            upd();
+            if(lives<=0){endGame();return;}
+            else lantern.invTimer=60;
+          }
         }
-        .title-font {
-            font-family: 'Cinzel', serif;
-            letter-spacing: 2px;
-        }
-        .card-navy {
-            background: rgba(14, 34, 56, 0.75);
-            border: 1px solid rgba(27, 58, 91, 0.8);
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 8px 20px rgba(0,0,0,0.4);
-        }
-        .btn-action {
-            background: #132c46;
-            border: 1px solid #1e4266;
-            transition: all 0.15s ease;
-        }
-        .btn-action:active {
-            transform: scale(0.96);
-            background: #1a3a5c;
-        }
-        .btn-play {
-            background: linear-gradient(180deg, #ffe066 0%, #f5ab2a 100%);
-            box-shadow: 0 4px 25px rgba(245, 171, 42, 0.4), inset 0 2px 0 rgba(255, 255, 255, 0.4);
-        }
-        .btn-play:active {
-            transform: scale(0.97);
-            filter: brightness(0.95);
-        }
-        .diya-glow {
-            filter: drop-shadow(0 0 25px rgba(255, 180, 50, 0.7));
-        }
-        .hidden { display: none !important; }
-    </style>
-</head>
-<body class="min-h-screen flex flex-col justify-between items-center px-4 py-4 relative bg-gradient-to-b from-[#060c17] via-[#091526] to-[#040810]">
-
-    <!-- Ambient Firefly Particles Background -->
-    <canvas id="ambient-canvas" class="fixed inset-0 pointer-events-none z-0"></canvas>
-
-    <!-- Top App Bar -->
-    <div class="w-full max-w-sm flex items-center justify-between text-slate-300 py-2 px-1 z-10">
-        <button onclick="exitApp()" class="text-xl p-1 opacity-80 hover:opacity-100"><i class="fas fa-times"></i></button>
-        <span class="font-bold text-base tracking-wide text-slate-200">Firefly Lantern</span>
-        <div class="flex items-center gap-3 text-lg opacity-80">
-            <i class="fas fa-chevron-down"></i>
-            <i class="fas fa-ellipsis-vertical"></i>
-        </div>
-    </div>
-
-    <!-- MAIN MENU VIEW -->
-    <div id="view-menu" class="w-full max-w-sm flex flex-col items-center z-10 my-auto pb-4">
-        
-        <!-- Diya / Lantern Icon -->
-        <div class="relative my-2 flex items-center justify-center">
-            <div class="absolute w-24 h-24 bg-amber-500/20 rounded-full blur-xl animate-pulse"></div>
-            <svg class="w-20 h-20 diya-glow relative" viewBox="0 0 100 100">
-                <ellipse cx="50" cy="30" rx="14" ry="20" fill="url(#flameGlow)" opacity="0.6"/>
-                <path d="M50 10 C58 24 62 34 50 45 C38 34 42 24 50 10 Z" fill="url(#flameGrad)">
-                    <animate attributeName="d" dur="1.2s" repeatCount="indefinite"
-                        values="M50 10 C58 24 62 34 50 45 C38 34 42 24 50 10 Z;
-                                M50 12 C60 22 58 35 50 45 C42 35 40 22 50 12 Z;
-                                M50 10 C58 24 62 34 50 45 C38 34 42 24 50 10 Z"/>
-                </path>
-                <ellipse cx="50" cy="36" rx="4" ry="7" fill="#ffffff" opacity="0.9"/>
-                <path d="M20 45 Q50 45 80 45 Q75 68 50 70 Q25 68 20 45 Z" fill="#b45309" stroke="#78350f" stroke-width="2"/>
-                <path d="M18 45 Q50 41 82 45 Q50 49 18 45 Z" fill="#d97706"/>
-                <ellipse cx="50" cy="71" rx="15" ry="4" fill="#92400e"/>
-                <defs>
-                    <radialGradient id="flameGlow" cx="50%" cy="50%" r="50%">
-                        <stop offset="0%" stop-color="#fef08a" stop-opacity="0.9"/>
-                        <stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/>
-                    </radialGradient>
-                    <linearGradient id="flameGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stop-color="#ffffff"/>
-                        <stop offset="35%" stop-color="#fef08a"/>
-                        <stop offset="70%" stop-color="#f59e0b"/>
-                        <stop offset="100%" stop-color="#dc2626"/>
-                    </linearGradient>
-                </defs>
-            </svg>
-        </div>
-
-        <!-- Title -->
-        <h1 class="text-3xl font-bold tracking-wider text-[#fde047] title-font text-center mt-1 drop-shadow-[0_2px_12px_rgba(253,224,71,0.4)]">
-         Firefly Phototaxis 🏮
-        </h1>
-        <p class="text-[10px] tracking-[0.22em] text-[#6b90ad] font-semibold uppercase mt-1 mb-5">
-            Guide the light through the night
-        </p>
-
-        <!-- Stats Bar (3 Cards) -->
-        <div class="w-full grid grid-cols-3 gap-2.5 mb-4">
-            <div class="card-navy rounded-2xl py-2.5 px-2 text-center">
-                <p id="stat-best" class="text-2xl font-bold text-slate-100 leading-tight">0</p>
-                <p class="text-[11px] text-[#6487a5] font-semibold mt-0.5">Best</p>
-            </div>
-            <div class="card-navy rounded-2xl py-2.5 px-2 text-center">
-                <p id="stat-coins" class="text-2xl font-bold text-amber-300 leading-tight">25</p>
-                <p class="text-[11px] text-[#6487a5] font-semibold mt-0.5">Glow Coins</p>
-            </div>
-            <div class="card-navy rounded-2xl py-2.5 px-2 text-center">
-                <p id="stat-games" class="text-2xl font-bold text-slate-100 leading-tight">0</p>
-                <p class="text-[11px] text-[#6487a5] font-semibold mt-0.5">Games</p>
-            </div>
-        </div>
-
-        <!-- PLAY Button -->
-        <button onclick="startPlay()" class="btn-play w-full py-3.5 rounded-2xl text-slate-950 font-extrabold text-lg flex items-center justify-center gap-2 mb-3.5 tracking-wide transition shadow-lg">
-            <i class="fas fa-play text-sm"></i> PLAY
-        </button>
-
-        <!-- 4 Action Buttons Grid -->
-        <div class="w-full grid grid-cols-2 gap-2.5 mb-4">
-            <button onclick="openModal('upgrades')" class="btn-action rounded-2xl py-3.5 px-4 text-xs font-semibold text-slate-200 flex items-center justify-center gap-2">
-                <i class="fas fa-shopping-cart text-[#38bdf8]"></i> Upgrades
-            </button>
-            <button onclick="openModal('howtoplay')" class="btn-action rounded-2xl py-3.5 px-4 text-xs font-semibold text-slate-200 flex items-center justify-center gap-2">
-                <span class="text-red-400 font-bold text-sm">?</span> How to play
-            </button>
-            <button onclick="claimDailyReward()" id="btn-daily" class="btn-action rounded-2xl py-3.5 px-4 text-xs font-semibold text-slate-200 flex items-center justify-center gap-2 text-center leading-tight">
-                <span id="daily-icon">🎁</span> <span id="daily-text">Claim daily</span>
-            </button>
-            <button onclick="toggleSound()" id="btn-sound" class="btn-action rounded-2xl py-3.5 px-4 text-xs font-semibold text-slate-200 flex items-center justify-center gap-2">
-                <i id="sound-icon" class="fas fa-volume-high text-cyan-400"></i> Sound
-            </button>
-        </div>
-
-        <!-- Rules & Info Box (Same Visual Card) -->
-        <div class="w-full bg-[#091b2c] border border-[#163654] rounded-2xl p-3.5 text-xs text-left mb-2.5 shadow-inner">
-            <h4 class="font-bold text-slate-200 text-xs mb-2 flex items-center gap-1.5">
-                <i class="fas fa-compass text-amber-400"></i> Where ads appear 
-            </h4>
-            <div class="space-y-2 text-[11px] leading-relaxed text-slate-300">
-                <p>
-                    <span class="bg-amber-500/20 text-amber-300 border border-amber-500/40 px-1.5 py-0.5 rounded font-bold text-[10px] mr-1">Rewarded</span>
-                    Optional: tap "Watch ad" to revive or double coins.
-                </p>
-                <p>
-                    <span class="bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 px-1.5 py-0.5 rounded font-bold text-[10px] mr-1">Interstitial</span>
-                    After every 3rd game, before a new game starts, with a notice first. Never during play.
-                </p>
-            </div>
-        </div>
-
-        <p class="text-[10px] text-slate-500 text-center font-medium">
-            100% Free Casual Game. Coins are earned purely through gameplay.
-        </p>
-    </div>
-
-    <!-- GAMEPLAY CANVAS VIEW -->
-    <div id="view-gameplay" class="fixed inset-0 z-20 bg-slate-950 hidden">
-        <!-- In-Game HUD -->
-        <div class="absolute top-4 left-4 right-4 flex justify-between items-center z-30 pointer-events-none">
-            <div class="bg-slate-900/80 border border-slate-700/80 px-3 py-1.5 rounded-full flex items-center gap-2 text-xs font-bold text-amber-300 shadow">
-                <i class="fas fa-fire text-amber-400"></i> <span id="hud-coins">0</span>
-                <span id="hud-shield-badge" class="hidden text-cyan-400 ml-1"><i class="fas fa-shield"></i></span>
-            </div>
-            <div class="text-3xl font-extrabold text-white title-font drop-shadow-md" id="hud-score">0</div>
-            <button onclick="quitToMenu()" class="pointer-events-auto bg-slate-900/80 border border-slate-700/80 w-8 h-8 rounded-full flex items-center justify-center text-slate-300 active:scale-90">
-                <i class="fas fa-times text-xs"></i>
-            </button>
-        </div>
-
-        <!-- "Get Ready" Floating Instruction -->
-        <div id="ready-instruction" class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-30">
-            <div class="bg-slate-900/90 border border-amber-500/30 px-6 py-4 rounded-3xl text-center shadow-2xl animate-bounce">
-                <div class="text-3xl mb-1 text-amber-400"><i class="fas fa-hand-pointer"></i></div>
-                <h3 class="font-bold text-white text-base">Tap Anywhere to Fly</h3>
-                <p class="text-xs text-slate-400 mt-1">Dodge pillars & collect fireflies</p>
-            </div>
-        </div>
-
-        <canvas id="game-canvas" class="w-full h-full block"></canvas>
-    </div>
-
-    <!-- GAME OVER MODAL -->
-    <div id="game-over-modal" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 hidden">
-        <div class="w-full max-w-xs card-navy rounded-3xl p-6 text-center border border-slate-700 shadow-2xl">
-            <div class="w-14 h-14 mx-auto mb-2 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-400 text-2xl">
-                <i class="fas fa-moon"></i>
-            </div>
-            <h3 class="text-xl font-bold text-white mb-1">Flight Ended</h3>
-            <p class="text-xs text-slate-400 mb-4">Well played! Try to beat your record.</p>
-
-            <div class="bg-[#091b2c] rounded-2xl p-3 border border-slate-800 mb-4 grid grid-cols-2 gap-2 text-center">
-                <div>
-                    <span class="text-[10px] text-slate-400 uppercase font-semibold">Score</span>
-                    <p id="over-score" class="text-xl font-bold text-white">0</p>
-                </div>
-                <div>
-                    <span class="text-[10px] text-slate-400 uppercase font-semibold">Coins</span>
-                    <p id="over-coins" class="text-xl font-bold text-amber-300">+0</p>
-                </div>
-            </div>
-
-            <!-- Action Buttons -->
-            <div class="space-y-2">
-                <button onclick="restartPlay()" class="btn-play w-full py-3.5 rounded-xl text-slate-950 font-extrabold text-xs transition">
-                    <i class="fas fa-play mr-1"></i> PLAY AGAIN
-                </button>
-                <button onclick="backToMenuFromGame()" class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 py-3 rounded-xl font-bold text-xs transition">
-                    Back to Menu
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- UPGRADES MODAL -->
-    <div id="modal-upgrades" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-        <div class="w-full max-w-sm card-navy rounded-3xl p-5 border border-slate-700 shadow-2xl">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="font-bold text-base text-white flex items-center gap-2">
-                    <i class="fas fa-shopping-cart text-[#38bdf8]"></i> Phototaxis  Upgrades
-                </h3>
-                <button onclick="closeModal('upgrades')" class="text-slate-400 text-lg"><i class="fas fa-times"></i></button>
-            </div>
-            
-            <div class="space-y-3 mb-4 text-xs">
-                <!-- Upgrade 1: Shield -->
-                <div class="bg-[#091b2c] p-3 rounded-2xl border border-slate-800 flex justify-between items-center">
-                    <div>
-                        <p class="font-bold text-slate-200 flex items-center gap-1.5"><i class="fas fa-shield text-cyan-400"></i> Protective Shield</p>
-                        <p class="text-[10px] text-slate-400">Survive 1 obstacle collision</p>
-                        <p class="text-[10px] text-cyan-400 font-semibold" id="status-shield">Available: 0</p>
-                    </div>
-                    <button onclick="buyShield(30)" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-3.5 py-2 rounded-xl text-xs active:scale-95 transition">
-                        30 🪙
-                    </button>
-                </div>
-
-                <!-- Upgrade 2: Magnet -->
-                <div class="bg-[#091b2c] p-3 rounded-2xl border border-slate-800 flex justify-between items-center">
-                    <div>
-                        <p class="font-bold text-slate-200 flex items-center gap-1.5"><i class="fas fa-magnet text-amber-400"></i> Coin Magnet</p>
-                        <p class="text-[10px] text-slate-400">Draws nearby fireflies towards you</p>
-                        <p class="text-[10px] text-emerald-400 font-semibold" id="status-magnet">Level: 1</p>
-                    </div>
-                    <button onclick="buyMagnet(50)" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-3.5 py-2 rounded-xl text-xs active:scale-95 transition">
-                        50 🪙
-                    </button>
-                </div>
-            </div>
-
-            <button onclick="closeModal('upgrades')" class="w-full py-2.5 bg-slate-800 border border-slate-700 text-slate-300 font-semibold rounded-xl text-xs">Close</button>
-        </div>
-    </div>
-
-    <!-- HOW TO PLAY MODAL -->
-    <div id="modal-howtoplay" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-        <div class="w-full max-w-sm card-navy rounded-3xl p-5 border border-slate-700 shadow-2xl">
-            <div class="flex justify-between items-center mb-3">
-                <h3 class="font-bold text-base text-white flex items-center gap-2">
-                    <span class="text-red-400 font-bold">?</span> How to play
-                </h3>
-                <button onclick="closeModal('howtoplay')" class="text-slate-400 text-lg"><i class="fas fa-times"></i></button>
-            </div>
-            
-            <div class="space-y-2.5 text-xs text-slate-300 mb-5 leading-relaxed">
-                <div class="flex items-start gap-2.5 bg-[#091b2c] p-3 rounded-2xl border border-slate-800">
-                    <i class="fas fa-hand-pointer text-amber-400 text-base mt-0.5"></i>
-                    <div>
-                        <b class="text-white">Tap to Glide:</b> Tap the screen to give a gentle flap. Keep tapping rhythmically to maintain steady flight.
-                    </div>
-                </div>
-                <div class="flex items-start gap-2.5 bg-[#091b2c] p-3 rounded-2xl border border-slate-800">
-                    <i class="fas fa-tree text-emerald-400 text-base mt-0.5"></i>
-                    <div>
-                        <b class="text-white">Wide Clear Paths:</b> Move through the glowing pillars smoothly.
-                    </div>
-                </div>
-                <div class="flex items-start gap-2.5 bg-[#091b2c] p-3 rounded-2xl border border-slate-800">
-                    <i class="fas fa-shield text-cyan-400 text-base mt-0.5"></i>
-                    <div>
-                        <b class="text-white">Shop Boosts:</b> Buy shields from the Upgrades shop so a mistake won't end your run!
-                    </div>
-                </div>
-            </div>
-
-            <button onclick="closeModal('howtoplay')" class="btn-play w-full py-2.5 text-slate-950 font-bold rounded-xl text-xs">Got it!</button>
-        </div>
-    </div>
-
-    <!-- Toast Notification -->
-    <div id="toast" class="fixed top-16 left-1/2 transform -translate-x-1/2 bg-slate-900 border border-slate-700 text-white text-xs font-semibold py-2 px-5 rounded-full shadow-2xl opacity-0 transition-opacity pointer-events-none z-50">
-        Message
-    </div>
-
-    <script>
-        // --- SOUND SYNTHESIZER (Pure Web Audio) ---
-        let soundEnabled = localStorage.getItem('sound_pref') !== 'false';
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
-        function playTone(freq, type, duration) {
-            if (!soundEnabled) return;
-            try {
-                if (audioCtx.state === 'suspended') audioCtx.resume();
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.type = type;
-                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-                gain.gain.setValueAtTime(0.06, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                osc.start();
-                osc.stop(audioCtx.currentTime + duration);
-            } catch(e) {}
-        }
-
-        function soundFlap() { playTone(380, 'sine', 0.1); }
-        function soundCoin() { playTone(920, 'triangle', 0.15); }
-        function soundHit()  { playTone(120, 'sawtooth', 0.25); }
-        function soundShield(){ playTone(600, 'sine', 0.3); }
-
-        function toggleSound() {
-            soundEnabled = !soundEnabled;
-            localStorage.setItem('sound_pref', soundEnabled);
-            updateSoundIcon();
-            showToast(soundEnabled ? "Sound: ON" : "Sound: OFF");
-            if (soundEnabled) soundCoin();
-        }
-
-        function updateSoundIcon() {
-            const icon = document.getElementById('sound-icon');
-            icon.className = soundEnabled ? "fas fa-volume-high text-cyan-400" : "fas fa-volume-xmark text-slate-500";
-        }
-
-        // --- AMBIENT FLOATING PARTICLES ---
-        const ambCanvas = document.getElementById('ambient-canvas');
-        const ambCtx = ambCanvas.getContext('2d');
-        let ambFireflies = [];
-
-        function initAmbient() {
-            ambCanvas.width = window.innerWidth;
-            ambCanvas.height = window.innerHeight;
-            ambFireflies = Array.from({ length: 25 }, () => ({
-                x: Math.random() * ambCanvas.width,
-                y: Math.random() * ambCanvas.height,
-                radius: Math.random() * 2 + 1,
-                alpha: Math.random() * 0.7 + 0.3,
-                speedX: (Math.random() - 0.5) * 0.35,
-                speedY: (Math.random() - 0.5) * 0.3 - 0.15
-            }));
-        }
-        window.addEventListener('resize', initAmbient);
-        initAmbient();
-
-        function renderAmbient() {
-            ambCtx.clearRect(0, 0, ambCanvas.width, ambCanvas.height);
-            ambFireflies.forEach(f => {
-                f.x += f.speedX;
-                f.y += f.speedY;
-                if (f.x < 0) f.x = ambCanvas.width;
-                if (f.x > ambCanvas.width) f.x = 0;
-                if (f.y < 0) f.y = ambCanvas.height;
-                if (f.y > ambCanvas.height) f.y = 0;
-
-                ambCtx.beginPath();
-                ambCtx.arc(f.x, f.y, f.radius * 2, 0, Math.PI * 2);
-                ambCtx.fillStyle = `rgba(253, 224, 71, ${f.alpha * 0.25})`;
-                ambCtx.fill();
-
-                ambCtx.beginPath();
-                ambCtx.arc(f.x, f.y, f.radius, 0, Math.PI * 2);
-                ambCtx.fillStyle = `rgba(255, 255, 255, ${f.alpha})`;
-                ambCtx.fill();
-            });
-            requestAnimationFrame(renderAmbient);
-        }
-        renderAmbient();
-
-        // --- GAME STORAGE & STATE ---
-        let bestScore = parseInt(localStorage.getItem('fl_best') || '0');
-        let glowCoins = parseInt(localStorage.getItem('fl_coins') || '25');
-        let gamesPlayed = parseInt(localStorage.getItem('fl_games') || '0');
-        let shieldCount = parseInt(localStorage.getItem('fl_shield') || '0');
-        let magnetLevel = parseInt(localStorage.getItem('fl_magnet') || '1');
-        let lastDaily = localStorage.getItem('fl_daily_date');
-
-        function updateUIStats() {
-            document.getElementById('stat-best').innerText = bestScore;
-            document.getElementById('stat-coins').innerText = glowCoins;
-            document.getElementById('stat-games').innerText = gamesPlayed;
-            document.getElementById('status-shield').innerText = `Available: ${shieldCount}`;
-            document.getElementById('status-magnet').innerText = `Level: ${magnetLevel}`;
-
-            const today = new Date().toDateString();
-            if (lastDaily === today) {
-                document.getElementById('daily-icon').innerText = "🎁";
-                document.getElementById('daily-text').innerText = "Claimed today";
-                document.getElementById('btn-daily').classList.add('opacity-70');
-            } else {
-                document.getElementById('daily-icon').innerText = "🎁";
-                document.getElementById('daily-text').innerText = "Daily Gift";
-                document.getElementById('btn-daily').classList.remove('opacity-70');
-            }
-        }
-
-        function claimDailyReward() {
-            const today = new Date().toDateString();
-            if (lastDaily === today) {
-                showToast("Already claimed today!");
-                return;
-            }
-            glowCoins += 25;
-            localStorage.setItem('fl_coins', glowCoins);
-            localStorage.setItem('fl_daily_date', today);
-            lastDaily = today;
-            updateUIStats();
-            soundCoin();
-            showToast("🎁 +25 Glow Coins Received!");
-        }
-
-        // --- REAL SMOOTH GAME ENGINE ---
-        const gCanvas = document.getElementById('game-canvas');
-        const gCtx = gCanvas.getContext('2d');
-        let gameState = 'IDLE'; // 'IDLE', 'READY', 'PLAYING', 'GAMEOVER'
-        let gLoopId = null;
-        let score = 0;
-        let sessionCoins = 0;
-        let activeShield = 0;
-        let hoverAngle = 0;
-
-        const lantern = {
-            x: 80,
-            y: 200,
-            radius: 11,
-            hitboxRadius: 6, // Very forgiving hitbox
-            velocity: 0,
-            gravity: 0.19,   // Gentle float gravity
-            lift: -4.3,      // Responsive smooth jump
-            invincibleTimer: 0,
-            sparks: []
-        };
-
-        let pillars = [];
-        let coins = [];
-        let gameFrames = 0;
-
-        function resizeGameCanvas() {
-            gCanvas.width = window.innerWidth;
-            gCanvas.height = window.innerHeight;
-        }
-
-        function startPlay() {
-            resizeGameCanvas();
-            document.getElementById('view-menu').classList.add('hidden');
-            document.getElementById('view-gameplay').classList.remove('hidden');
-            document.getElementById('game-over-modal').classList.add('hidden');
-            document.getElementById('ready-instruction').classList.remove('hidden');
-
-            score = 0;
-            sessionCoins = 0;
-            gameFrames = 0;
-            pillars = [];
-            coins = [];
-            lantern.y = gCanvas.height / 2;
-            lantern.velocity = 0;
-            lantern.sparks = [];
-            lantern.invincibleTimer = 0;
-            activeShield = shieldCount;
-
-            updateShieldHUD();
-            document.getElementById('hud-score').innerText = '0';
-            document.getElementById('hud-coins').innerText = '0';
-
-            gameState = 'READY'; // Lantern hovers safely, waiting for player's first tap
-            if (gLoopId) cancelAnimationFrame(gLoopId);
-            runGameLoop();
-        }
-
-        function updateShieldHUD() {
-            const badge = document.getElementById('hud-shield-badge');
-            if (activeShield > 0) {
-                badge.classList.remove('hidden');
-            } else {
-                badge.classList.add('hidden');
-            }
-        }
-
-        function handlePlayerTap() {
-            if (gameState === 'READY') {
-                gameState = 'PLAYING';
-                document.getElementById('ready-instruction').classList.add('hidden');
-                lantern.velocity = lantern.lift;
-                soundFlap();
-                return;
-            }
-
-            if (gameState === 'PLAYING') {
-                lantern.velocity = lantern.lift;
-                soundFlap();
-
-                // Add sparks
-                for (let i = 0; i < 3; i++) {
-                    lantern.sparks.push({
-                        x: lantern.x - 6,
-                        y: lantern.y + 4,
-                        vx: -Math.random() * 2 - 1,
-                        vy: (Math.random() - 0.5) * 2,
-                        alpha: 1,
-                        radius: Math.random() * 2 + 1
-                    });
-                }
-            }
-        }
-
-        gCanvas.addEventListener('pointerdown', (e) => {
-            e.preventDefault();
-            handlePlayerTap();
-        });
-        window.addEventListener('keydown', (e) => {
-            if (e.code === 'Space') handlePlayerTap();
-        });
-
-        function runGameLoop() {
-            update();
-            draw();
-            gLoopId = requestAnimationFrame(runGameLoop);
-        }
-
-        function update() {
-            if (gameState === 'READY') {
-                // Gentle safe hovering motion before first tap
-                hoverAngle += 0.05;
-                lantern.y = (gCanvas.height / 2) + Math.sin(hoverAngle) * 8;
-                return;
-            }
-
-            if (gameState !== 'PLAYING') return;
-
-            gameFrames++;
-            lantern.velocity += lantern.gravity;
-            lantern.y += lantern.velocity;
-
-            // Spawn Pillars with wide comfortable gap
-            const gap = 175; // very comfortable opening
-            const pWidth = 50;
-
-            if (gameFrames % 120 === 0) {
-                const minH = 70;
-                const maxH = gCanvas.height - gap - minH;
-                const topH = Math.floor(Math.random() * (maxH - minH + 1)) + minH;
-                pillars.push({
-                    x: gCanvas.width + 10,
-                    top: topH,
-                    bottom: topH + gap,
-                    passed: false
-                });
-
-                // Spawn floating firefly coin in the gap
-                coins.push({
-                    x: gCanvas.width + 35,
-                    y: topH + (gap / 2) + (Math.sin(gameFrames) * 25),
-                    radius: 8,
-                    baseY: topH + (gap / 2),
-                    collected: false
-                });
-            }
-
-            // Move Pillars & Collision
-            for (let i = 0; i < pillars.length; i++) {
-                let p = pillars[i];
-                p.x -= 2.0;
-
-                // Score
-                if (!p.passed && p.x + pWidth < lantern.x) {
-                    score++;
-                    p.passed = true;
-                    document.getElementById('hud-score').innerText = score;
-                }
-
-                // Accurate, forgiving collision check
-                if (lantern.invincibleTimer <= 0) {
-                    const inX = lantern.x + lantern.hitboxRadius > p.x && lantern.x - lantern.hitboxRadius < p.x + pWidth;
-                    const inY = lantern.y - lantern.hitboxRadius < p.top || lantern.y + lantern.hitboxRadius > p.bottom;
-
-                    if (inX && inY) {
-                        if (activeShield > 0) {
-                            activeShield--;
-                            shieldCount = Math.max(0, shieldCount - 1);
-                            localStorage.setItem('fl_shield', shieldCount);
-                            updateShieldHUD();
-                            soundShield();
-                            showToast("🛡️ Shield Absorbed Hit!");
-                            lantern.invincibleTimer = 80; // 80 frames grace period
-                        } else {
-                            handleGameOver();
-                            return;
-                        }
-                    }
-                }
-
-                if (p.x + pWidth < -20) {
-                    pillars.splice(i, 1);
-                    i--;
-                }
-            }
-
-            if (lantern.invincibleTimer > 0) lantern.invincibleTimer--;
-
-            // Move & Collect Coins with Magnet
-            const magnetDist = 40 + (magnetLevel * 25);
-            for (let i = 0; i < coins.length; i++) {
-                let c = coins[i];
-                c.x -= 2.0;
-                c.y = c.baseY + Math.sin(gameFrames * 0.08) * 8;
-
-                // Magnet pull
-                const dx = lantern.x - c.x;
-                const dy = lantern.y - c.y;
-                const dist = Math.hypot(dx, dy);
-
-                if (dist < magnetDist) {
-                    c.x += dx * 0.1;
-                    c.y += dy * 0.1;
-                }
-
-                if (!c.collected && dist < lantern.radius + c.radius + 6) {
-                    c.collected = true;
-                    sessionCoins++;
-                    document.getElementById('hud-coins').innerText = sessionCoins;
-                    soundCoin();
-                }
-
-                if (c.x < -30 || c.collected) {
-                    coins.splice(i, 1);
-                    i--;
-                }
-            }
-
-            // Floor & Ceiling Limits
-            if (lantern.y + lantern.radius >= gCanvas.height - 10) {
-                if (activeShield > 0) {
-                    activeShield--;
-                    shieldCount = Math.max(0, shieldCount - 1);
-                    localStorage.setItem('fl_shield', shieldCount);
-                    updateShieldHUD();
-                    lantern.velocity = lantern.lift * 1.2;
-                    lantern.invincibleTimer = 60;
-                    soundShield();
-                } else {
-                    handleGameOver();
-                    return;
-                }
-            }
-            if (lantern.y - lantern.radius <= 10) {
-                lantern.y = 10 + lantern.radius;
-                lantern.velocity = 0.5;
-            }
-
-            // Update Sparks
-            lantern.sparks.forEach((sp, idx) => {
-                sp.x += sp.vx;
-                sp.y += sp.vy;
-                sp.alpha -= 0.04;
-                if (sp.alpha <= 0) lantern.sparks.splice(idx, 1);
-            });
-        }
-
-        function draw() {
-            gCtx.fillStyle = '#060c18';
-            gCtx.fillRect(0, 0, gCanvas.width, gCanvas.height);
-
-            // Draw Pillars (Silhouetted Night Pillars with Soft Glow)
-            pillars.forEach(p => {
-                // Top Pillar
-                const gradTop = gCtx.createLinearGradient(p.x, 0, p.x + 50, 0);
-                gradTop.addColorStop(0, '#0c1e33');
-                gradTop.addColorStop(0.5, '#193c61');
-                gradTop.addColorStop(1, '#0c1e33');
-                gCtx.fillStyle = gradTop;
-                gCtx.fillRect(p.x, 0, 50, p.top);
-
-                gCtx.fillStyle = '#225585';
-                gCtx.fillRect(p.x - 2, p.top - 8, 54, 8);
-
-                // Bottom Pillar
-                const gradBot = gCtx.createLinearGradient(p.x, p.bottom, p.x + 50, gCanvas.height);
-                gradBot.addColorStop(0, '#0c1e33');
-                gradBot.addColorStop(0.5, '#193c61');
-                gradBot.addColorStop(1, '#0c1e33');
-                gCtx.fillStyle = gradBot;
-                gCtx.fillRect(p.x, p.bottom, 50, gCanvas.height - p.bottom);
-
-                gCtx.fillStyle = '#225585';
-                gCtx.fillRect(p.x - 2, p.bottom, 54, 8);
-            });
-
-            // Draw Firefly Coins
-            coins.forEach(c => {
-                gCtx.beginPath();
-                gCtx.arc(c.x, c.y, 14, 0, Math.PI * 2);
-                gCtx.fillStyle = 'rgba(253, 224, 71, 0.2)';
-                gCtx.fill();
-
-                gCtx.beginPath();
-                gCtx.arc(c.x, c.y, c.radius, 0, Math.PI * 2);
-                gCtx.fillStyle = '#fde047';
-                gCtx.fill();
-            });
-
-            // Draw Sparks
-            lantern.sparks.forEach(sp => {
-                gCtx.beginPath();
-                gCtx.arc(sp.x, sp.y, sp.radius, 0, Math.PI * 2);
-                gCtx.fillStyle = `rgba(245, 158, 11, ${sp.alpha})`;
-                gCtx.fill();
-            });
-
-            // Draw Lantern Glow
-            const halo = gCtx.createRadialGradient(lantern.x, lantern.y, 2, lantern.x, lantern.y, 45);
-            halo.addColorStop(0, 'rgba(254, 240, 138, 0.65)');
-            halo.addColorStop(0.5, 'rgba(245, 158, 11, 0.2)');
-            halo.addColorStop(1, 'rgba(245, 158, 11, 0)');
-            gCtx.fillStyle = halo;
-            gCtx.beginPath();
-            gCtx.arc(lantern.x, lantern.y, 45, 0, Math.PI * 2);
-            gCtx.fill();
-
-            // Shield Aura (if active)
-            if (activeShield > 0) {
-                gCtx.strokeStyle = 'rgba(56, 189, 248, 0.7)';
-                gCtx.lineWidth = 2.5;
-                gCtx.beginPath();
-                gCtx.arc(lantern.x, lantern.y, 20, 0, Math.PI * 2);
-                gCtx.stroke();
-            }
-
-            // Flicker during invincibility
-            if (lantern.invincibleTimer % 8 > 4) return;
-
-            // Diya Base
-            gCtx.fillStyle = '#b45309';
-            gCtx.beginPath();
-            gCtx.ellipse(lantern.x, lantern.y + 4, 12, 6, 0, 0, Math.PI);
-            gCtx.fill();
-
-            // Flame
-            gCtx.fillStyle = '#f59e0b';
-            gCtx.beginPath();
-            gCtx.arc(lantern.x, lantern.y - 2, 5, 0, Math.PI * 2);
-            gCtx.fill();
-
-            gCtx.fillStyle = '#ffffff';
-            gCtx.beginPath();
-            gCtx.arc(lantern.x, lantern.y - 1, 2.5, 0, Math.PI * 2);
-            gCtx.fill();
-        }
-
-        function handleGameOver() {
-            gameState = 'GAMEOVER';
-            soundHit();
-
-            gamesPlayed++;
-            glowCoins += sessionCoins;
-            if (score > bestScore) bestScore = score;
-
-            localStorage.setItem('fl_best', bestScore);
-            localStorage.setItem('fl_coins', glowCoins);
-            localStorage.setItem('fl_games', gamesPlayed);
-            updateUIStats();
-
-            document.getElementById('over-score').innerText = score;
-            document.getElementById('over-coins').innerText = `+${sessionCoins}`;
-            document.getElementById('game-over-modal').classList.remove('hidden');
-        }
-
-        function restartPlay() {
-            document.getElementById('game-over-modal').classList.add('hidden');
-            startPlay();
-        }
-
-        function quitToMenu() {
-            gameState = 'IDLE';
-            if (gLoopId) cancelAnimationFrame(gLoopId);
-            backToMenuFromGame();
-        }
-
-        function backToMenuFromGame() {
-            document.getElementById('view-gameplay').classList.add('hidden');
-            document.getElementById('game-over-modal').classList.add('hidden');
-            document.getElementById('view-menu').classList.remove('hidden');
-            updateUIStats();
-        }
-
-        // Shop Upgrades Logic
-        function buyShield(cost) {
-            if (glowCoins < cost) {
-                showToast("Not enough Glow Coins!");
-                return;
-            }
-            glowCoins -= cost;
-            shieldCount++;
-            localStorage.setItem('fl_coins', glowCoins);
-            localStorage.setItem('fl_shield', shieldCount);
-            updateUIStats();
-            soundCoin();
-            showToast("🛡️ Shield Purchased!");
-        }
-
-        function buyMagnet(cost) {
-            if (glowCoins < cost) {
-                showToast("Not enough Glow Coins!");
-                return;
-            }
-            glowCoins -= cost;
-            magnetLevel++;
-            localStorage.setItem('fl_coins', glowCoins);
-            localStorage.setItem('fl_magnet', magnetLevel);
-            updateUIStats();
-            soundCoin();
-            showToast("🧲 Magnet Upgraded!");
-        }
-
-        // Modals & Helpers
-        function openModal(id) { document.getElementById('modal-' + id).classList.remove('hidden'); }
-        function closeModal(id) { document.getElementById('modal-' + id).classList.add('hidden'); }
-
-        function showToast(msg) {
-            const toast = document.getElementById('toast');
-            toast.innerText = msg;
-            toast.classList.remove('opacity-0');
-            setTimeout(() => toast.classList.add('opacity-0'), 2200);
-        }
-
-        function exitApp() {
-            if (window.Telegram && window.Telegram.WebApp) {
-                window.Telegram.WebApp.close();
-            } else {
-                showToast("Closed");
-            }
-        }
-
-        if (window.Telegram && window.Telegram.WebApp) {
-            window.Telegram.WebApp.ready();
-            window.Telegram.WebApp.expand();
-        }
-
-        // Start
-        updateUIStats();
-        updateSoundIcon();
-    </script>
-</body>
-</html>
+      }
+    }
+
+    if(p.x+pWidth<-20*DPR){pillars.splice(i,1);i--}
+  }
+
+  // Magnet Fireflies
+  const magRadius=(40+S.slow*35)*DPR;
+  for(let i=0;i<coins.length;i++){
+    let c=coins[i];
+    c.x-=sp*dt;
+
+    const dx=lantern.x-c.x,dy=lantern.y-c.y;
+    const dist=Math.hypot(dx,dy);
+
+    if(dist<magRadius){c.x+=dx*0.12;c.y+=dy*0.12}
+
+    if(!c.collected&&dist<lantern.radius+c.r+4*DPR){
+      c.collected=true;
+      tone(880,.12);
+      score+=combo;
+      upd();
+    }
+    if(c.x<-25*DPR||c.collected){coins.splice(i,1);i--}
+  }
+
+  // Floor / Ceiling check
+  if(lantern.y>H-12*DPR||lantern.y<12*DPR){
+    if(shield){
+      shield=false;lantern.vy=-lantern.vy*0.8;lantern.invTimer=50;upd();
+    }else{
+      lives--;streak=0;combo=1;upd();
+      if(lives<=0){endGame();return}
+      else{lantern.y=H*0.5;lantern.vy=0;lantern.invTimer=60;}
+    }
+  }
+
+  // Update Sparks
+  lantern.sparks.forEach((s,idx)=>{s.x+=s.vx;s.y+=s.vy;s.a-=0.04*dt;if(s.a<=0)lantern.sparks.splice(idx,1)});
+}
+
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  
+  // Ambient floating background fireflies
+  bg.forEach(f=>{
+    f.y-=f.s*(mode==='game'?1.5:1);if(f.y<-.05)f.y=1.05;
+    const a=.35+.35*Math.sin(ft*.03+f.p);
+    ctx.fillStyle='rgba(255,230,120,'+a+')';ctx.shadowColor='#ffd84d';ctx.shadowBlur=10*DPR;
+    ctx.beginPath();ctx.arc(f.x*W,f.y*H,f.r*DPR,0,7);ctx.fill()
+  });
+  ctx.shadowBlur=0;
+
+  if(mode!=='game'&&mode!=='over'&&!paused)return;
+
+  // Draw Pillars
+  const pWidth=48*DPR;
+  pillars.forEach(p=>{
+    const gTop=ctx.createLinearGradient(p.x,0,p.x+pWidth,0);
+    gTop.addColorStop(0,'#0c1e33');gTop.addColorStop(0.5,'#1b426b');gTop.addColorStop(1,'#0c1e33');
+    ctx.fillStyle=gTop;
+    ctx.fillRect(p.x,0,pWidth,p.top);
+    ctx.fillStyle='#2b6399';
+    ctx.fillRect(p.x-2*DPR,p.top-6*DPR,pWidth+4*DPR,6*DPR);
+
+    const gBot=ctx.createLinearGradient(p.x,p.bottom,p.x+pWidth,H);
+    gBot.addColorStop(0,'#0c1e33');gBot.addColorStop(0.5,'#1b426b');gBot.addColorStop(1,'#0c1e33');
+    ctx.fillStyle=gBot;
+    ctx.fillRect(p.x,p.bottom,pWidth,H-p.bottom);
+    ctx.fillStyle='#2b6399';
+    ctx.fillRect(p.x-2*DPR,p.bottom,pWidth+4*DPR,6*DPR);
+  });
+
+  // Draw Fireflies
+  coins.forEach(c=>{
+    ctx.beginPath();ctx.arc(c.x,c.y,12*DPR,0,7);ctx.fillStyle='rgba(253,224,71,0.2)';ctx.fill();
+    ctx.beginPath();ctx.arc(c.x,c.y,c.r,0,7);ctx.fillStyle='#fde047';ctx.shadowColor='#fde047';ctx.shadowBlur=10*DPR;ctx.fill();
+    ctx.shadowBlur=0;
+  });
+
+  // Draw Lantern Sparks
+  lantern.sparks.forEach(s=>{
+    ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,7);ctx.fillStyle='rgba(255,180,60,'+s.a+')';ctx.fill();
+  });
+
+  // Lantern Light Glow
+  const halo=ctx.createRadialGradient(lantern.x,lantern.y,2*DPR,lantern.x,lantern.y,44*DPR);
+  halo.addColorStop(0,'rgba(254,240,138,0.7)');
+  halo.addColorStop(0.4,'rgba(245,158,11,0.2)');
+  halo.addColorStop(1,'rgba(245,158,11,0)');
+  ctx.fillStyle=halo;
+  ctx.beginPath();ctx.arc(lantern.x,lantern.y,44*DPR,0,7);ctx.fill();
+
+  // Shield Circle
+  if(shield){
+    ctx.strokeStyle='#8ad7ff';ctx.lineWidth=2.5*DPR;
+    ctx.beginPath();ctx.arc(lantern.x,lantern.y,18*DPR,0,7);ctx.stroke();
+  }
+
+  // Invincibility flash
+  if(lantern.invTimer>0&&Math.floor(ft*0.5)%2===0)return;
+
+  // Diya Base
+  ctx.fillStyle='#b45309';
+  ctx.beginPath();ctx.ellipse(lantern.x,lantern.y+4*DPR,11*DPR,6*DPR,0,0,Math.PI);ctx.fill();
+  // Flame
+  ctx.fillStyle='#f59e0b';
+  ctx.beginPath();ctx.arc(lantern.x,lantern.y-2*DPR,5*DPR,0,7);ctx.fill();
+  ctx.fillStyle='#ffffff';
+  ctx.beginPath();ctx.arc(lantern.x,lantern.y-1*DPR,2.5*DPR,0,7);ctx.fill();
+}
+
+// ====== Ads Integration ======
+$('again').onclick=()=>{if(S.games>0&&S.games%3===0){show('intNote')}else startGame()};
+$('intGo').onclick=async()=>{try{if(intAd)await intAd.show()}catch(e){}startGame()};
+
+$('rev').onclick=async()=>{$('msg').textContent='';
+if(!rewardAd){$('msg').textContent='No ad available right now. Try again later.';return}
+try{const r=await rewardAd.show();if(r&&r.done){
+  revived=true;lives=1;
+  // Clear nearby obstacles to prevent instant death upon revive
+  pillars=pillars.filter(p=>p.x>W*0.6||p.x<W*0.1);
+  lantern.y=H*0.5;lantern.vy=0;lantern.invTimer=70;
+  hideAll();mode='game';running=true;
+  $('hud').classList.add('on');$('pauseBtn').classList.add('on');
+  S.games--;last=performance.now();upd();banner('Revived!')
+}}catch(e){$('msg').textContent='Ad not completed, so no reward was given.'}};
+
+$('dbl').onclick=async()=>{$('msg').textContent='';
+if(!rewardAd){$('msg').textContent='No ad available right now. Try again later.';return}
+try{const r=await rewardAd.show();if(r&&r.done){
+  S.coins+=runCoins;save();$('fc').textContent='+'+(runCoins*2);$('dbl').disabled=true;$('msg').textContent='Coins doubled!'
+}}catch(e){$('msg').textContent='Ad not completed, so no reward was given.'}};
+
+refreshHome();requestAnimationFrame(loop);
+</script>
+</body></html>
